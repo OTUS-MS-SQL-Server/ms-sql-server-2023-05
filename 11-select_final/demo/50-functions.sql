@@ -1,19 +1,22 @@
 
 declare @today date = Cast(GetDate() as date)
 
-SELECT EOMONTH('2019-09-01 23:50:00');
+SELECT @today
+
+SELECT EOMONTH('2019-02-01 23:50:00');
 
 select CAST('2019-09-01 23:59:59.999' AS DATETIME) AS Dt,
 	CAST('2019-09-01 23:59:59.999' AS DATETIME2) AS Dt2
 
 SELECT OrderId, OrderDate, EOMONTH(OrderDate) AS 'End of Month'
 ,FORMAT(OrderDate,'dd.MM.yyyy') AS FormattedDate
-,CONVERT(VARCHAR,OrderDate,109)
+,CONVERT(VARCHAR,OrderDate,102)
 FROM Sales.Orders
 WHERE OrderDate < '2014-01-01';
 
-select format(getdate(),'\a\t \g\h\j dd day MM month yyyy year'),dateadd(month,1,'2020-01-31'),dateadd(dd,30,'2020-01-31'),
-dateadd(month,3,'2020-01-31')
+select format(getdate(),'\a\t \g\h\j dd day MM month yyyy year')
+--,dateadd(month,1,'2020-01-31'),dateadd(dd,30,'2020-01-31'),
+--dateadd(month,3,'2020-01-31')
 
 
 
@@ -42,6 +45,9 @@ GROUP BY IsPermittedToLogon;
 
 SELECT *
 FROM STRING_SPLIT('Appoved;On approval',';');
+
+selECT *
+FROM STRING_SPLIT('Taj Shand;Sophia Hinton;Lily Code;Kayla Woodcock;Jack Potter;Hudson Onslow;Hudson Hollinworth;Anthony Grosse;Amy Trefl',';');
 --
 SELECT STRING_ESCAPE('Kdf " dkdk','json');
 

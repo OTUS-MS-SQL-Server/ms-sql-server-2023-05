@@ -108,9 +108,12 @@ SET Salary = Salary * 1.1
 FROM Employees 
 WHERE Salary < 2000; 
 
+
 select *, Salary * 1.1 
 from Employees
+WHERE Salary < 2000 
 order by salary;
+
 
 --168, 429
 --665,719
@@ -189,6 +192,7 @@ SELECT p.BusinessEntityID,
        FROM   Person.PersonPhone AS pp
        WHERE  pp.BusinessEntityID = p.BusinessEntityID) AS PhoneNum
 FROM   Person.Person AS p;
+
 with cte as
 (
 	  SELECT string_agg(pp.PhoneNumber,',') PhoneNumber,
