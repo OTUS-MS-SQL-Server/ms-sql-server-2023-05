@@ -17,7 +17,7 @@ BEGIN TRAN;
   END;  
 COMMIT;
 GO
- 
+-- 2s
 -- Проверим, что данные вставились
 SELECT COUNT(*) FROM Sales.OrdersMemory_SCHEMA_ONLY;
 GO
@@ -55,3 +55,25 @@ EXEC Sales.OrdersMemory_SCHEMA_ONLY_Insert_Native @RowCount = 50000;
 -- Проверяем
 SELECT COUNT(*) FROM Sales.OrdersMemory_SCHEMA_ONLY;
 GO
+
+
+
+-- Обычная ХП
+CREATE OR ALTER PROCEDURE Sales.OrdersMemory_SCHEMA_ONLY_Insert
+    @RowCount INT 
+AS   
+BEGIN   
+  DECLARE @i INT = 1;  
+  WHILE @i <= @RowCount  
+  BEGIN;  
+    INSERT INTO Sales.OrdersMemory_SCHEMA_ONLY
+    (OrderLineID, OrderId, StockItemID, Quantity) 
+    VALUES (@i, @i, @i, @i*10);  
+    SET @i += 1;  
+  END;  
+END;
+GO
+
+
+EXEC Sales.OrdersMemory_SCHEMA_ONLY_Insert @RowCount = 50000;
+--3-4 s 
