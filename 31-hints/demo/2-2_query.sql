@@ -1,11 +1,11 @@
---query hints
+п»ї--query hints
 --------------------------
 use WideWorldImporters;
 
 set statistics time on;
 set statistics io on;
 
-begin --optimize for (при неравномерном распределении данных)
+begin --optimize for (РїСЂРё РЅРµСЂР°РІРЅРѕРјРµСЂРЅРѕРј СЂР°СЃРїСЂРµРґРµР»РµРЅРёРё РґР°РЅРЅС‹С…)
 	drop table if exists t1
 	drop table if exists t2
 
@@ -14,7 +14,7 @@ begin --optimize for (при неравномерном распределении данных)
 
 	create unique clustered index idx_t2_t1_id_id on t2(t1_id, id);
 
-	insert t1 (id, name) --50 тыс
+	insert t1 (id, name) --50 С‚С‹СЃ
 	select row_number() over(order by 1/0), concat('name ', row_number() over(order by 1/0))
 	from string_split(space(999), ' ') t1 
 	cross join string_split(space(49), ' ') t2
@@ -24,32 +24,32 @@ begin --optimize for (при неравномерном распределении данных)
 	from t1 
 	cross join string_split(space(9), ' ')
 
-	--неравномерность - обычно t2.id встречается 50 тыс
+	--РЅРµСЂР°РІРЅРѕРјРµСЂРЅРѕСЃС‚СЊ - РѕР±С‹С‡РЅРѕ t2.id РІСЃС‚СЂРµС‡Р°РµС‚СЃСЏ 50 С‚С‹СЃ
 	insert t2(id, t1_id) values(-1, -1)
 	insert t1(id) values(-1)
 	
 
-	--большая часть данных равномерно распределена 
+	--Р±РѕР»СЊС€Р°СЏ С‡Р°СЃС‚СЊ РґР°РЅРЅС‹С… СЂР°РІРЅРѕРјРµСЂРЅРѕ СЂР°СЃРїСЂРµРґРµР»РµРЅР° 
 	select *
 	from t2 
 	inner join t1 on t1.id = t2.t1_id
 	where t2.id < 10000
 
-	--вкл план запроса
-	--дб 1 строка (значение выбивается из распределения)
+	--РІРєР» РїР»Р°РЅ Р·Р°РїСЂРѕСЃР°
+	--РґР± 1 СЃС‚СЂРѕРєР° (Р·РЅР°С‡РµРЅРёРµ РІС‹Р±РёРІР°РµС‚СЃСЏ РёР· СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ)
 	select *
 	from t2 
 	inner join t1 on t1.id = t2.t1_id
 	where t2.id < 0
 
-	--запрос с параметрами - для типичных данных
+	--Р·Р°РїСЂРѕСЃ СЃ РїР°СЂР°РјРµС‚СЂР°РјРё - РґР»СЏ С‚РёРїРёС‡РЅС‹С… РґР°РЅРЅС‹С…
 	declare @id1 int = 0
 	select *
 	from t2 
 	inner join t1 on t1.id = t2.t1_id
 	where t2.id < @id1
 
-	--укажем, для каких параметров оптимизировать
+	--СѓРєР°Р¶РµРј, РґР»СЏ РєР°РєРёС… РїР°СЂР°РјРµС‚СЂРѕРІ РѕРїС‚РёРјРёР·РёСЂРѕРІР°С‚СЊ
 	declare @id2 int = 0
 	select *
 	from t2 
@@ -57,7 +57,7 @@ begin --optimize for (при неравномерном распределении данных)
 	where t2.id < @id2
 	option (optimize for (@id2 = 0))
 
-	--unknown - среднестатистический параметр
+	--unknown - СЃСЂРµРґРЅРµСЃС‚Р°С‚РёСЃС‚РёС‡РµСЃРєРёР№ РїР°СЂР°РјРµС‚СЂ
 	declare @id3 int = 0
 	select *
 	from t2 
@@ -67,7 +67,7 @@ begin --optimize for (при неравномерном распределении данных)
 end 
 
 begin --use plan
-	--OPTION(USE PLAN) - план посмотреть в 00_ad_hoc_plan_cashe.sql
+	--OPTION(USE PLAN) - РїР»Р°РЅ РїРѕСЃРјРѕС‚СЂРµС‚СЊ РІ 00_ad_hoc_plan_cashe.sql
 	
 	declare @id4 int = 0
 	select *
@@ -79,17 +79,17 @@ begin --use plan
 end
 
 
-begin --recompile с хп или option (recompile)
-	--для хп или параметризированных запросов создает новый план выполнения запроса
-	-- recompile (универсальная хп CustomerSearch_KitchenSink - фильтры в зависимости от параметорв) 
+begin --recompile СЃ С…Рї РёР»Рё option (recompile)
+	--РґР»СЏ С…Рї РёР»Рё РїР°СЂР°РјРµС‚СЂРёР·РёСЂРѕРІР°РЅРЅС‹С… Р·Р°РїСЂРѕСЃРѕРІ СЃРѕР·РґР°РµС‚ РЅРѕРІС‹Р№ РїР»Р°РЅ РІС‹РїРѕР»РЅРµРЅРёСЏ Р·Р°РїСЂРѕСЃР°
+	-- recompile (СѓРЅРёРІРµСЂСЃР°Р»СЊРЅР°СЏ С…Рї CustomerSearch_KitchenSink - С„РёР»СЊС‚СЂС‹ РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ РїР°СЂР°РјРµС‚РѕСЂРІ) 
 
-	-- Подготовка - отключим контроль прав доступа к Sales.Customers 
+	-- РџРѕРґРіРѕС‚РѕРІРєР° - РѕС‚РєР»СЋС‡РёРј РєРѕРЅС‚СЂРѕР»СЊ РїСЂР°РІ РґРѕСЃС‚СѓРїР° Рє Sales.Customers 
 	alter security policy Application.FilterCustomersBySalesTerritoryRole with (state = off)
 
-	--включить
+	--РІРєР»СЋС‡РёС‚СЊ
 	--alter security policy Application.FilterCustomersBySalesTerritoryRole with (state = on)
 
-	--запрос по всей таблице Customers
+	--Р·Р°РїСЂРѕСЃ РїРѕ РІСЃРµР№ С‚Р°Р±Р»РёС†Рµ Customers
 	exec CustomerSearch_KitchenSink
 			@CustomerID = NULL,
 			@CustomerName = NULL,
@@ -102,8 +102,8 @@ begin --recompile с хп или option (recompile)
 			@IsOnCreditHold = NULL
 			--WITH RECOMPILE
 	
-	--запрос по 1 клиенту (неоптимальный план)
-	--запрос по 1 клиенту + recompile (оптимальный план)
+	--Р·Р°РїСЂРѕСЃ РїРѕ 1 РєР»РёРµРЅС‚Сѓ (РЅРµРѕРїС‚РёРјР°Р»СЊРЅС‹Р№ РїР»Р°РЅ)
+	--Р·Р°РїСЂРѕСЃ РїРѕ 1 РєР»РёРµРЅС‚Сѓ + recompile (РѕРїС‚РёРјР°Р»СЊРЅС‹Р№ РїР»Р°РЅ)
 	exec CustomerSearch_KitchenSink
 			@CustomerID = 5,
 			@CustomerName = NULL,
@@ -119,7 +119,7 @@ begin --recompile с хп или option (recompile)
 end 
 
 begin --maxdop
-	--maxdop 1 - на небольших таблицах или при нехватеке памяти
+	--maxdop 1 - РЅР° РЅРµР±РѕР»СЊС€РёС… С‚Р°Р±Р»РёС†Р°С… РёР»Рё РїСЂРё РЅРµС…РІР°С‚РµРєРµ РїР°РјСЏС‚Рё
 	select People.FullName, max(Inv.InvoiceDate)
 	from Sales.Invoices as Inv
 	inner join Application.People as People ON People.PersonID = Inv.SalespersonPersonID
@@ -133,7 +133,7 @@ begin --maxdop
 end 
 
 begin --max recursion
-	--заполнить таблицу датами за 180 дней
+	--Р·Р°РїРѕР»РЅРёС‚СЊ С‚Р°Р±Р»РёС†Сѓ РґР°С‚Р°РјРё Р·Р° 180 РґРЅРµР№
 	; with cte as (
 		select cast(getdate() as date) as dt, 1 as i 
 		union all
@@ -144,7 +144,7 @@ begin --max recursion
 end 
 
 begin --IGNORE_NONCLUSTERED_COLUMNSTORE_INDEX
-	--если есть подходящий не колоночный индекс
+	--РµСЃР»Рё РµСЃС‚СЊ РїРѕРґС…РѕРґСЏС‰РёР№ РЅРµ РєРѕР»РѕРЅРѕС‡РЅС‹Р№ РёРЅРґРµРєСЃ
 	exec sp_helpindex 'Sales.OrderLines'
 
 	select avg(l.PickedQuantity)
@@ -160,8 +160,8 @@ begin --IGNORE_NONCLUSTERED_COLUMNSTORE_INDEX
 	option (ignore_nonclustered_columnstore_index)
 end 
 
-begin --force order - порядок выполнения соединений
-	--? есть ли разница в порядке выполнения?
+begin --force order - РїРѕСЂСЏРґРѕРє РІС‹РїРѕР»РЅРµРЅРёСЏ СЃРѕРµРґРёРЅРµРЅРёР№
+	--? РµСЃС‚СЊ Р»Рё СЂР°Р·РЅРёС†Р° РІ РїРѕСЂСЏРґРєРµ РІС‹РїРѕР»РЅРµРЅРёСЏ?
 	select so.OrderID, li.OrderLineID
 	from Sales.Orders AS so
 	inner join Sales.OrderLines AS li ON so.OrderID = li.OrderID
@@ -178,8 +178,8 @@ begin --force order - порядок выполнения соединений
 
 
 
-	--принцип соединения и фильтрации - на первом шаге используем фильтр, отсекающий самое большое кол-во строк
-	--какой из запросов выполнится быстрее?
+	--РїСЂРёРЅС†РёРї СЃРѕРµРґРёРЅРµРЅРёСЏ Рё С„РёР»СЊС‚СЂР°С†РёРё - РЅР° РїРµСЂРІРѕРј С€Р°РіРµ РёСЃРїРѕР»СЊР·СѓРµРј С„РёР»СЊС‚СЂ, РѕС‚СЃРµРєР°СЋС‰РёР№ СЃР°РјРѕРµ Р±РѕР»СЊС€РѕРµ РєРѕР»-РІРѕ СЃС‚СЂРѕРє
+	--РєР°РєРѕР№ РёР· Р·Р°РїСЂРѕСЃРѕРІ РІС‹РїРѕР»РЅРёС‚СЃСЏ Р±С‹СЃС‚СЂРµРµ?
 	select so.OrderID, li.OrderLineID
 	from Sales.Orders AS so
 	inner join Sales.OrderLines AS li ON so.OrderID = li.OrderID

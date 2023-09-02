@@ -1,19 +1,19 @@
---join hints
+п»ї--join hints
 --------------------------------
 /*
-Планы запросов - какие типы физических соединений таблиц помните?
-Заставляют использовать 1 из 3х видов физических соединений для конкретного соединения
-Есть смысл использовать при соединении большого кол-ва таблиц, либо для ad-hoc 
+РџР»Р°РЅС‹ Р·Р°РїСЂРѕСЃРѕРІ - РєР°РєРёРµ С‚РёРїС‹ С„РёР·РёС‡РµСЃРєРёС… СЃРѕРµРґРёРЅРµРЅРёР№ С‚Р°Р±Р»РёС† РїРѕРјРЅРёС‚Рµ?
+Р—Р°СЃС‚Р°РІР»СЏСЋС‚ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ 1 РёР· 3С… РІРёРґРѕРІ С„РёР·РёС‡РµСЃРєРёС… СЃРѕРµРґРёРЅРµРЅРёР№ РґР»СЏ РєРѕРЅРєСЂРµС‚РЅРѕРіРѕ СЃРѕРµРґРёРЅРµРЅРёСЏ
+Р•СЃС‚СЊ СЃРјС‹СЃР» РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РїСЂРё СЃРѕРµРґРёРЅРµРЅРёРё Р±РѕР»СЊС€РѕРіРѕ РєРѕР»-РІР° С‚Р°Р±Р»РёС†, Р»РёР±Рѕ РґР»СЏ ad-hoc 
 
-парсер окна сообщений
+РїР°СЂСЃРµСЂ РѕРєРЅР° СЃРѕРѕР±С‰РµРЅРёР№
 https://statisticsparser.com/
 */
--- Подготовка - отключим контроль прав доступа к Sales.Customers 
+-- РџРѕРґРіРѕС‚РѕРІРєР° - РѕС‚РєР»СЋС‡РёРј РєРѕРЅС‚СЂРѕР»СЊ РїСЂР°РІ РґРѕСЃС‚СѓРїР° Рє Sales.Customers 
 
---включить
+--РІРєР»СЋС‡РёС‚СЊ
 --ALTER SECURITY POLICY Application.FilterCustomersBySalesTerritoryRole WITH (STATE = ON)
 
-select CustomerID from Sales.Customers where CustomerID = 7 --план запроса
+select CustomerID from Sales.Customers where CustomerID = 7 --РїР»Р°РЅ Р·Р°РїСЂРѕСЃР°
 ALTER SECURITY POLICY Application.FilterCustomersBySalesTerritoryRole WITH (STATE = OFF)
 
 
@@ -24,7 +24,7 @@ use WideWorldImporters;
 
 begin
 
-	-- несколько таблиц продажи клиентам с выводом покупателя и плательщика
+	-- РЅРµСЃРєРѕР»СЊРєРѕ С‚Р°Р±Р»РёС† РїСЂРѕРґР°Р¶Рё РєР»РёРµРЅС‚Р°Рј СЃ РІС‹РІРѕРґРѕРј РїРѕРєСѓРїР°С‚РµР»СЏ Рё РїР»Р°С‚РµР»СЊС‰РёРєР°
 	select Client.CustomerName, Inv.InvoiceID, Inv.InvoiceDate, Item.StockItemName, Details.Quantity, Details.UnitPrice, PayClient.CustomerName as BillForCustomer
 	from Sales.Invoices as Inv
 	inner join Sales.InvoiceLines as Details on Inv.InvoiceID = Details.InvoiceID
@@ -43,7 +43,7 @@ begin
 	where Client.CustomerID = 1
 	
 	-----
-	--ухудшение - зафиксировался порядок соединения (loop)
+	--СѓС…СѓРґС€РµРЅРёРµ - Р·Р°С„РёРєСЃРёСЂРѕРІР°Р»СЃСЏ РїРѕСЂСЏРґРѕРє СЃРѕРµРґРёРЅРµРЅРёСЏ (loop)
 	select Client.CustomerName, Inv.InvoiceID, Inv.InvoiceDate, Item.StockItemName, Details.Quantity, Details.UnitPrice, PayClient.CustomerName as BillForCustomer
 	from Sales.Invoices as Inv
 	inner join Sales.InvoiceLines as Details on Inv.InvoiceID = Details.InvoiceID
@@ -83,13 +83,13 @@ begin
 	from Sales.Invoices as Inv
 	inner LOOP join Sales.InvoiceLines as Details on Inv.InvoiceID = Details.InvoiceID;
 
-	--hash выгоднее из колоночного индекса
+	--hash РІС‹РіРѕРґРЅРµРµ РёР· РєРѕР»РѕРЅРѕС‡РЅРѕРіРѕ РёРЅРґРµРєСЃР°
 	select Inv.InvoiceID, Inv.InvoiceDate, Details.Quantity, Details.UnitPrice
 	from Sales.Invoices as Inv
 	inner HASH join Sales.InvoiceLines as Details on Inv.InvoiceID = Details.InvoiceID;
 
-	--смотрим на кол-во чтений (если большое - надо разбираться)
-	--сравнение кол-ва чтений при выполнении - parser
+	--СЃРјРѕС‚СЂРёРј РЅР° РєРѕР»-РІРѕ С‡С‚РµРЅРёР№ (РµСЃР»Рё Р±РѕР»СЊС€РѕРµ - РЅР°РґРѕ СЂР°Р·Р±РёСЂР°С‚СЊСЃСЏ)
+	--СЃСЂР°РІРЅРµРЅРёРµ РєРѕР»-РІР° С‡С‚РµРЅРёР№ РїСЂРё РІС‹РїРѕР»РЅРµРЅРёРё - parser
 	select People.FullName, Inv.InvoiceID, Inv.InvoiceDate
 	from Sales.Invoices as Inv
 	inner LOOP join Application.People as People on People.PersonID = Inv.SalespersonPersonID;
@@ -100,8 +100,8 @@ begin
 
 end
 
-begin --исключения
-	--контактные лица заказчиков и покупателей
+begin --РёСЃРєР»СЋС‡РµРЅРёСЏ
+	--РєРѕРЅС‚Р°РєС‚РЅС‹Рµ Р»РёС†Р° Р·Р°РєР°Р·С‡РёРєРѕРІ Рё РїРѕРєСѓРїР°С‚РµР»РµР№
 
 	select distinct o.ContactPersonID, po.ContactPersonID 
 	from Sales.Orders as o
@@ -115,7 +115,7 @@ begin --исключения
 	from Sales.Orders as o
 	right join Purchasing.PurchaseOrders as po on po.ContactPersonID = o.ContactPersonID
 
-	--исключение
+	--РёСЃРєР»СЋС‡РµРЅРёРµ
 	select distinct o.ContactPersonID, po.ContactPersonID 
 	from Sales.Orders as o
 	right loop join Purchasing.PurchaseOrders as po on po.ContactPersonID = o.ContactPersonID
